@@ -44,6 +44,145 @@ export const AnimatedCard = ({ children }) => (
     </motion.div>
 );
 
+export const BusinessCardGrid = ({ 
+    title, 
+    backgroundColor = '#f0f2f5', 
+    titleColor = 'turquoise',
+    columns = 4,
+    cards = [],
+    padding = '80px',
+    minHeight = '100vh',
+    cardStyle = 'default' // 'default' or 'advanced'
+}) => (
+    <section style={{ 
+        minHeight, 
+        background: backgroundColor, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        padding,
+        width: '100%'
+    }}>
+        <div style={{ 
+            maxWidth: '1200px', 
+            margin: '0 auto', 
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+        }}>
+            {title && (
+                <h2 style={{ 
+                    fontSize: '32px', 
+                    fontWeight: 700, 
+                    color: colors[titleColor], 
+                    marginBottom: '60px', 
+                    fontFamily: '"Reckless Neue", serif',
+                    textAlign: 'center',
+                    width: '100%'
+                }}>
+                    {title}
+                </h2>
+            )}
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: `repeat(${columns}, 1fr)`, 
+                gap: '30px',
+                width: '100%',
+                justifyItems: 'center'
+            }}>
+                {cards.map((card, index) => (
+                    cardStyle === 'advanced' ? (
+                        <AnimatedCard key={index}>
+                            <div style={{ 
+                                background: 'white', 
+                                borderRadius: '24px', 
+                                padding: '40px', 
+                                boxShadow: '0 15px 50px rgba(0,0,0,0.12)', 
+                                border: `1px solid ${colors[card.buttonColor || 'turquoise']}20`, 
+                                height: '500px', 
+                                position: 'relative', 
+                                overflow: 'hidden',
+                                width: '100%',
+                                maxWidth: '280px'
+                            }}>
+                                <div style={{ 
+                                    position: 'absolute', 
+                                    top: 0, 
+                                    right: 0, 
+                                    width: '60px', 
+                                    height: '60px', 
+                                    background: colors[card.buttonColor || 'turquoise'] + '20', 
+                                    borderRadius: '0 24px 0 60px' 
+                                }} />
+                                <ImagePlaceholder height={240} />
+                                <h3 style={{ 
+                                    fontSize: '24px', 
+                                    fontWeight: 700, 
+                                    color: colors.navy, 
+                                    marginBottom: '16px', 
+                                    marginTop: '24px',
+                                    fontFamily: '"Reckless Neue", serif' 
+                                }}>
+                                    {card.title}
+                                </h3>
+                                <p style={{ 
+                                    fontSize: '16px', 
+                                    color: colors.navy, 
+                                    opacity: 0.8, 
+                                    lineHeight: 1.6, 
+                                    marginBottom: '20px',
+                                    fontFamily: '"Reckless Neue", serif' 
+                                }}>
+                                    {card.description}
+                                </p>
+                                <motion.div 
+                                    whileHover={{ x: 8 }} 
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '12px', 
+                                        color: colors[card.buttonColor || 'turquoise'], 
+                                        fontWeight: 600, 
+                                        fontSize: '16px', 
+                                        cursor: 'pointer',
+                                        fontFamily: '"Reckless Neue", serif' 
+                                    }}
+                                >
+                                    {card.buttonText || 'Explore More'}
+                                    <div style={{ 
+                                        width: '40px', 
+                                        height: '40px', 
+                                        background: colors[card.buttonColor || 'turquoise'], 
+                                        borderRadius: '50%', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        color: 'white', 
+                                        fontSize: '18px' 
+                                    }}>
+                                        →
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </AnimatedCard>
+                    ) : (
+                        <div key={index} style={{ width: '100%', maxWidth: '280px' }}>
+                            <BusinessCard
+                                icon={card.icon}
+                                title={card.title}
+                                description={card.description}
+                                buttonColor={card.buttonColor || 'turquoise'}
+                                buttonText={card.buttonText || 'Get started'}
+                            />
+                        </div>
+                    )
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
 export const AboutSection = () => (
     <section style={{ minWidth: '100vw', height: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '0' }}>
         <div style={{ width: '100%', display: 'flex' }}>
