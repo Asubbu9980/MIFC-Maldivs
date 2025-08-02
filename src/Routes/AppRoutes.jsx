@@ -1,16 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import MIFCVertical from '../components/Home/MIFCVertical';
-import MIFCHorizontal from '../components/Home';
+import MIFCHorizontal from '../components/Home/MIFCHorizontal';
+
 
 const AppRoutes = () => {
     return (
-        <Router>
-            <Routes>
-                <Route path="/vertical" element={<MIFCVertical />} />
-                <Route path="/horizontal" element={<MIFCHorizontal />} />
-            </Routes>
-        </Router>
+        <Routes>
+            <Route path="/" element={<MIFCVertical />} />
+            <Route path="/horizontal" element={<MIFCHorizontal />} />
+        </Routes>
     );
 };
 

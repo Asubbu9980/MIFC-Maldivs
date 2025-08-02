@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import HeroImage from "../../assets/HeroImages/hero1.png";
-import { ImagePlaceholder, BusinessCard, AnimatedCard, AboutSection, BusinessCardGrid } from '../Common/CommonComponents';
+
+import { AboutSection, BusinessCardGrid } from '../Common/CommonComponents';
 import '../../assets/reckless/stylesheet.css';
 import LOGO from '../../assets/MIFC_logo.svg';
 
-// Import hero images for carousel
+// Import hero images
 import hero1 from "../../assets/HeroImages/hero1.png";
 import hero2 from "../../assets/HeroImages/hero2.png";
 import hero3 from "../../assets/HeroImages/hero3.jpg";
@@ -21,12 +21,9 @@ const colors = {
     whatsOnBg: '#0C347A'
 };
 
-// ...existing code...
-
-const MIFCVertical = () => {
+const MIFCHorizontal = () => {
     const containerRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
-    const [navOpacity, setNavOpacity] = useState(1);
     const [activeDropdown, setActiveDropdown] = useState(null);
     
     // Hero carousel state
@@ -40,7 +37,7 @@ const MIFCVertical = () => {
             setCurrentImageIndex((prevIndex) => 
                 (prevIndex + 1) % heroImages.length
             );
-        }, 5000); // Change image every 5 seconds
+        }, 5000); // Change image every 10 seconds
 
         return () => clearInterval(interval);
     }, [heroImages.length]);
@@ -74,40 +71,94 @@ const MIFCVertical = () => {
         const container = containerRef.current;
         if (!container) return;
 
-        const handleScroll = () => {
-            const progress = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
-            setScrollProgress(progress);
-            
-            // Hide nav completely when scrolling past first section (100vh)
-            const firstSectionHeight = window.innerHeight;
-            const opacity = container.scrollTop < firstSectionHeight ? 1 : 0;
-            setNavOpacity(opacity);
-        };
+        let isScrolling = false;
+        let scrollTimeout;
 
-        const handleKeyDown = (e) => {
-            if (e.key === 'ArrowUp') {
+        const handleWheel = (e) => {
+            // Allow natural horizontal scrolling but enhance vertical wheel to horizontal scroll
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
                 e.preventDefault();
-                container.scrollBy({ top: -300, behavior: 'smooth' });
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                container.scrollBy({ top: 300, behavior: 'smooth' });
+                const scrollSpeed = e.deltaY * 3; // Increased speed multiplier
+                
+                container.scrollBy({
+                    left: scrollSpeed,
+                    behavior: 'auto' // Use auto for immediate response
+                });
             }
         };
 
-        container.addEventListener('scroll', handleScroll);
+        const handleKeyDown = (e) => {
+            const scrollAmount = 500; // Increased scroll amount for faster navigation
+            
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        };
+
+        const handleScroll = () => {
+            if (!isScrolling) {
+                isScrolling = true;
+            }
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isScrolling = false;
+            }, 100);
+
+            const progress = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
+            setScrollProgress(progress);
+        };
+
+        // Enhanced touch handling for better mobile experience
+        let startX = 0;
+        let startScrollLeft = 0;
+
+        const handleTouchStart = (e) => {
+            startX = e.touches[0].pageX;
+            startScrollLeft = container.scrollLeft;
+            container.style.scrollBehavior = 'auto'; // Disable smooth scrolling during touch
+        };
+
+        const handleTouchMove = (e) => {
+            if (!startX) return;
+            
+            const currentX = e.touches[0].pageX;
+            const diffX = (startX - currentX) * 2; // Increase touch sensitivity
+            
+            container.scrollLeft = startScrollLeft + diffX;
+        };
+
+        const handleTouchEnd = () => {
+            startX = 0;
+            startScrollLeft = 0;
+            container.style.scrollBehavior = 'smooth'; // Re-enable smooth scrolling
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('scroll', handleScroll);
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('touchmove', handleTouchMove);
+            container.removeEventListener('touchend', handleTouchEnd);
             document.removeEventListener('keydown', handleKeyDown);
+            clearTimeout(scrollTimeout);
         };
     }, []);
 
     const ImagePlaceholder = ({ height = 300, src = null, alt = "Image", className = "" }) => (
         <div className={className} style={{ height, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${colors.turquoise}20`, position: 'relative' }}>
             {src ? (
-
-
                 <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
                 <div style={{ height: '100%', background: colors.lightCyan, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px', fontWeight: 600 }}>
@@ -115,6 +166,27 @@ const MIFCVertical = () => {
                 </div>
             )}
         </div>
+    );
+
+    const BusinessCard = ({ icon, title, description, buttonColor = 'turquoise', buttonText = 'Get started' }) => (
+        <motion.div whileHover={{ y: -8, scale: 1.02 }} style={{ cursor: 'pointer' }}>
+            <div style={{ background: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', height: '320px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                    <div style={{ fontSize: '48px', color: colors[buttonColor], marginBottom: '20px', textAlign: 'center' }}>{icon}</div>
+                    <h3 style={{ fontSize: '20px', fontWeight: 700, color: colors.navy, marginBottom: '16px', textAlign: 'center' }}>{title}</h3>
+                    <p style={{ fontSize: '14px', color: colors.navy, opacity: 0.8, lineHeight: 1.5, textAlign: 'center' }}>{description}</p>
+                </div>
+                <motion.button whileHover={{ scale: 1.05 }} style={{ width: '100%', padding: '12px 24px', background: colors[buttonColor], color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    {buttonText} <span>→</span>
+                </motion.button>
+            </div>
+        </motion.div>
+    );
+
+    const AnimatedCard = ({ children }) => (
+        <motion.div whileHover={{ y: -15, scale: 1.03, transition: { duration: 0.4, ease: 'easeOut' } }} style={{ cursor: 'pointer', transformOrigin: 'center' }}>
+            {children}
+        </motion.div>
     );
 
     const HeroCarousel = ({ images, currentIndex }) => {
@@ -186,7 +258,7 @@ const MIFCVertical = () => {
                 </AnimatePresence>
                 
                 {/* Left Navigation Arrow */}
-                <motion.button
+                {/* <motion.button
                     onClick={goToPrevious}
                     whileHover={{ 
                         scale: 1.05, 
@@ -219,10 +291,10 @@ const MIFCVertical = () => {
                     }}
                 >
                     ‹
-                </motion.button>
+                </motion.button> */}
 
                 {/* Right Navigation Arrow */}
-                <motion.button
+                {/* <motion.button
                     onClick={goToNext}
                     whileHover={{ 
                         scale: 1.05, 
@@ -255,14 +327,14 @@ const MIFCVertical = () => {
                     }}
                 >
                     ›
-                </motion.button>
+                </motion.button> */}
                 
                 {/* Carousel indicators - Slash Style */}
                 <div 
                     style={{ 
                         position: 'absolute', 
                         bottom: '200px', 
-                        left: '50%', 
+                        left: '80%', 
                         transform: 'translateX(-50%) translateZ(0)', 
                         display: 'flex', 
                         gap: '20px',
@@ -428,61 +500,33 @@ const MIFCVertical = () => {
         );
     };
 
-    const BusinessCard = ({ icon, title, description, buttonColor = 'turquoise', buttonText = 'Get started' }) => (
-        <motion.div whileHover={{ y: -8, scale: 1.02 }} style={{ cursor: 'pointer' }}>
-            <div style={{ background: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', height: '320px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                    <div style={{ fontSize: '48px', color: colors[buttonColor], marginBottom: '20px', textAlign: 'center' }}>{icon}</div>
-                    <h3 style={{ fontSize: '20px', fontWeight: 700, color: colors.navy, marginBottom: '16px', textAlign: 'center' }}>{title}</h3>
-                    <p style={{ fontSize: '14px', color: colors.navy, opacity: 0.8, lineHeight: 1.5, textAlign: 'center' }}>{description}</p>
-                </div>
-                <motion.button whileHover={{ scale: 1.05 }} style={{ width: '100%', padding: '12px 24px', background: colors[buttonColor], color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    {buttonText} <span>→</span>
-                </motion.button>
-            </div>
-        </motion.div>
-    );
-
-    const AnimatedCard = ({ children }) => (
-        <motion.div whileHover={{ y: -15, scale: 1.03, transition: { duration: 0.4, ease: 'easeOut' } }} style={{ cursor: 'pointer', transformOrigin: 'center' }}>
-            {children}
-        </motion.div>
-    );
-
-    // ...existing code...
     return (
-        <div style={{ height: '100vh', overflow: 'hidden', background: colors.navy }}>
+        <div style={{ height: '100vh', overflow: 'hidden', background: colors.navy, fontFamily: '"Reckless Neue", serif' }}>
 
             <style>{`
-* {
-    font-family: 'Reckless Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+.horizontal-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x mandatory;
 }
-
-.vertical-container::-webkit-scrollbar { 
-    width: 8px; 
+.horizontal-container::-webkit-scrollbar { 
+    display: none; 
 }
-.vertical-container::-webkit-scrollbar-track { 
-    background: transparent; 
-}
-.vertical-container::-webkit-scrollbar-thumb { 
-    background: ${colors.turquoise}40; 
-    border-radius: 4px; 
-}
-.vertical-container::-webkit-scrollbar-thumb:hover { 
-    background: ${colors.turquoise}60; 
-}
-.vertical-container { 
-    scrollbar-width: thin; 
-    scrollbar-color: ${colors.turquoise}40 transparent; 
+.horizontal-container > section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
 }
 @media (max-width: 768px) {
-.vertical-container { 
-    padding: 0 20px !important; 
-}
-.vertical-container > section { 
-    min-height: 100vh !important; 
-    padding: 40px 20px !important; 
-}
+    .horizontal-container { 
+        flex-direction: column !important; 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important;
+        scroll-snap-type: y mandatory;
+    }
+    .horizontal-container > section { 
+        min-width: 100% !important;
+        scroll-snap-align: start;
+    }
 }
 .dropdown-menu {
 position: absolute;
@@ -593,19 +637,17 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
 
             <motion.nav 
                 style={{ 
-                    position: 'absolute', 
+                    position: 'fixed', 
                     top: 0, 
                     left: 0, 
                     right: 0, 
                     zIndex: 1000, 
                     background: 'transparent', 
-                    padding: '16px 0',
-                    opacity: navOpacity,
-                    transition: 'opacity 0.3s ease',
-                    pointerEvents: navOpacity > 0 ? 'auto' : 'none'
+                    padding: '16px 0'
                 }}
             >
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>
+                    {/* <div style={{ fontSize: '24px', fontWeight: 400, color: colors.turquoise, fontFamily: '"Reckless Neue", serif' }}></div> */}
                     <img src={LOGO} alt="MIFC Logo" style={{ height: '100px', width: 'auto', objectFit: 'contain' }} />
                     <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
                         {[
@@ -627,7 +669,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                                 onMouseEnter={() => setActiveDropdown(item.name)}
                                 onMouseLeave={() => setActiveDropdown(null)}
                             >
-                                <a href="#" style={{ fontSize: '20px', fontWeight: 600, color: 'white', textDecoration: 'none', transition: 'color 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <a href="#" style={{ fontSize: '20px', fontWeight: 600, color: colors.navy, textDecoration: 'none', transition: 'color 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {item.name}
                                     {item.dropdown && <span style={{ fontSize: '10px', color: colors.turquoise }}>▼</span>}
                                 </a>
@@ -674,139 +716,44 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                 </div>
             </motion.nav>
 
-            <div ref={containerRef} className="vertical-container" style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden', scrollBehavior: 'smooth' }}>
+            <div ref={containerRef} className="horizontal-container" style={{ 
+                display: 'flex', 
+                height: '100vh', 
+                overflowX: 'auto', 
+                overflowY: 'hidden', 
+                scrollBehavior: 'smooth',
+                cursor: 'grab'
+            }} 
+            onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
+            onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
+            onMouseLeave={(e) => e.currentTarget.style.cursor = 'grab'}
+            >
 
-                <section style={{ minHeight: '100vh', position: 'relative', background: colors.navy, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <section style={{ minWidth: '100vw', height: '100vh', position: 'relative', background: colors.navy, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
                         <HeroCarousel images={heroImages} currentIndex={currentImageIndex} />
                     </div>
-                    <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, delay: 0.3 }} style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: '900px', padding: '0 40px', color: 'white' }}>
-                        <h1 style={{ fontSize: 'clamp(2.5rem,6vw,5rem)', fontWeight: 800, marginBottom: '24px', lineHeight: 1.1, color: 'white', textShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>Maldives International Financial Centre</h1>
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.8 }} style={{ fontSize: 'clamp(1.2rem,3vw,2rem)', fontWeight: 300, marginBottom: '40px', color: colors.lightCyan, opacity: 0.95 }}>Rethinking finance. Redefining lifestyle.</motion.p>
+                    <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, delay: 0.3 }} style={{ position: 'relative', zIndex: 2, textAlign: 'left', maxWidth: '600px', padding: '0 80px', color: 'white', marginLeft: '0' }}>
+                        <h1 style={{ fontSize: 'clamp(2.5rem,6vw,5rem)', fontWeight: 800, marginBottom: '24px', lineHeight: 1.1, color: 'white', textShadow: '0 4px 20px rgba(0,0,0,0.3)', fontFamily: '"Reckless Neue", serif' }}>Maldives International Financial Centre</h1>
+                        {/* <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.8 }} style={{ fontSize: 'clamp(1.2rem,3vw,2rem)', fontWeight: 300, marginBottom: '40px', color: colors.lightCyan, opacity: 0.95, fontFamily: '"Reckless Neue", serif' }}>Rethinking finance. Redefining lifestyle.</motion.p> */}
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.2 }} style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                            <button style={{ padding: '15px 24px', fontSize: '15px', fontWeight: 600, background: colors.turquoise, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', boxShadow: `0 2px 8px ${colors.turquoise}40`, transition: 'all 0.3s ease', fontFamily: '"Reckless Neue", serif' }}>Read more</button>
+                            <button style={{ padding: '15px 24px', fontSize: '15px', fontWeight: 600, background: 'transparent', color: 'white', border: '1px solid white', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.3s ease', fontFamily: '"Reckless Neue", serif' }}>Contact us</button>
+                        </motion.div>
                     </motion.div>
                 </section>
 
-                {/* About Section */}
-                <section style={{ minHeight: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '0' }}>
-                    <div style={{ width: '100%', display: 'flex' }}>
-                        <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-                            
-                            {/* Left Side - Content */}
-                            <motion.div 
-                                initial={{ opacity: 0, x: -50 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8 }}
-                                viewport={{ once: true }}
-                                style={{ padding: '0 40px', flex: '1', maxWidth: '600px' }}
-                            >
+                <AboutSection />
 
-                                <div style={{ marginBottom: '24px' }}>
-                                    <span style={{ 
-                                        fontSize: '16px', 
-                                        fontWeight: 600, 
-                                        color: colors.turquoise, 
-                                        textTransform: 'uppercase', 
-                                        letterSpacing: '2px' 
-                                    }}>
-                                        About MIFC
-                                    </span>
-                                </div>
-                                
-                                <h2 style={{ 
-                                    fontSize: 'clamp(2rem, 4vw, 3.5rem)', 
-                                    fontWeight: 800, 
-                                    color: colors.navy, 
-                                    marginBottom: '32px', 
-                                    lineHeight: 1.2 
-                                }}>
-                                    World's premier International Financial Centre in the capital
-                                </h2>
-                                
-                                <div style={{ 
-                                    padding: '24px', 
-                                    background: `linear-gradient(135deg, ${colors.turquoise}10, ${colors.lightCyan}10)`, 
-                                    borderRadius: '16px', 
-                                    borderLeft: `6px solid ${colors.turquoise}`, 
-                                    marginBottom: '32px' 
-                                }}>
-                                    <p style={{ 
-                                        fontSize: '18px', 
-                                        color: colors.navy, 
-                                        lineHeight: 1.7, 
-                                        margin: 0, 
-                                        fontStyle: 'italic' 
-                                    }}>
-                                        The Maldives International Financial Centre (MIFC) is a wholly sustainable, 
-                                        blockchain-powered financial freezone located in the Maldives and governed by 
-                                        the Maldives International Financial Services Authority (MIFSA). MIFSA is the 
-                                        centralized government agency committed to maintaining the highest 
-                                        international standards and best practices.
-                                    </p>
-                                </div>
-                            </motion.div>
-                            
-                            {/* Right Side - Image and Features */}
-                            <motion.div 
-                                initial={{ opacity: 0, x: 50 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8, delay: 0.2 }}
-                                viewport={{ once: true }}
-                                style={{ position: 'relative', flex: '0.7', padding: '0 20px', maxWidth: '500px' }}
-                            >
-                                <div style={{ position: 'relative' }}>
-                                    <ImagePlaceholder height={300} />
-                                    
-                                    {/* Floating Quote Card */}
-                                    <motion.div 
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.6, delay: 0.8 }}
-                                        viewport={{ once: true }}
-                                        style={{ 
-                                            position: 'absolute', 
-                                            bottom: '-40px', 
-                                            right: '-20px', 
-                                            background: colors.turquoise, 
-                                            color: 'white', 
-                                            padding: '20px', 
-                                            borderRadius: '16px', 
-                                            width: '280px', 
-                                            boxShadow: '0 15px 40px rgba(13,219,204,0.3)' 
-                                        }}
-                                    >
-                                        <div style={{ 
-                                            fontSize: '48px', 
-                                            color: 'rgba(255,255,255,0.3)', 
-                                            lineHeight: 1, 
-                                            marginBottom: '12px' 
-                                        }}>
-                                            "
-                                        </div>
-                                        <p style={{ 
-                                            fontSize: '16px', 
-                                            fontWeight: 600, 
-                                            lineHeight: 1.5, 
-                                            margin: 0, 
-                                            color: 'white' 
-                                        }}>
-                                            Engagement and brand storytelling are at the heart of our approach.
-                                        </p>
-                                    </motion.div>
-                                </div>
-                            </motion.div>
-                            
-                        </div>
-                    </div>
-                </section>
-
-                <section style={{ minHeight: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px' }}>
+                <section style={{ minWidth: '100vw', height: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '0 80px' }}>
                     <BusinessCardGrid
                         title="MIFC Business Categories"
-                        backgroundColor="#f0f2f5"
-                        titleColor="turquoise"
+                        backgroundColor="white"
+                        titleColor="navy"
                         columns={4}
-                        padding="80px"
+                        padding="0 80px"
                         minHeight="100vh"
+                        cardStyle="default"
                         cards={[
                             {
                                 icon: "💼",
@@ -816,14 +763,14 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                                 buttonText: "Get started"
                             },
                             {
-                                icon: "📊",
-                                title: "Legal Database",
+                                icon: "⚖️",
+                                title: "Legal Resource",
                                 description: "A world-class judicial system based on English common law.",
                                 buttonColor: "deepBlue",
                                 buttonText: "Get started"
                             },
                             {
-                                icon: "🏖️",
+                                icon: "🤝",
                                 title: "Experience MIFC",
                                 description: "An unparalleled destination for residents and visitors.",
                                 buttonColor: "turquoise",
@@ -840,56 +787,9 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     />
                 </section>
 
-                <section style={{ minHeight: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '80px' }}>
+                <section style={{ minWidth: '100vw', height: '100vh', background: colors.futureBg, display: 'flex', alignItems: 'center', padding: '0 80px', position: 'relative' }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
-
-                            <AnimatedCard>
-                                <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 15px 50px rgba(0,0,0,0.12)', border: `1px solid ${colors.turquoise}20`, height: '500px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: colors.turquoise + '20', borderRadius: '0 24px 0 60px' }} />
-                                    <ImagePlaceholder height={240} />
-                                    <h3 style={{ fontSize: '24px', fontWeight: 700, color: colors.navy, marginBottom: '16px', marginTop: '24px' }}>Business in MIFC</h3>
-                                    <p style={{ fontSize: '16px', color: colors.navy, opacity: 0.8, lineHeight: 1.6, marginBottom: '20px' }}>The leading financial hub in the region providing world-class infrastructure...</p>
-                                    <motion.div whileHover={{ x: 8 }} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: colors.turquoise, fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>
-                                        Explore More
-                                        <div style={{ width: '40px', height: '40px', background: colors.turquoise, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '18px' }}>→</div>
-                                    </motion.div>
-                                </div>
-                            </AnimatedCard>
-
-                            <AnimatedCard>
-                                <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 15px 50px rgba(0,0,0,0.12)', border: `1px solid ${colors.deepBlue}20`, height: '500px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: colors.deepBlue + '20', borderRadius: '0 24px 0 60px' }} />
-                                    <ImagePlaceholder height={240} />
-                                    <h3 style={{ fontSize: '24px', fontWeight: 700, color: colors.navy, marginBottom: '16px', marginTop: '24px' }}>Legal Database</h3>
-                                    <p style={{ fontSize: '16px', color: colors.navy, opacity: 0.8, lineHeight: 1.6, marginBottom: '20px' }}>A world-class legal judicial system based on English common law with modern innovations...</p>
-                                    <motion.div whileHover={{ x: 8 }} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: colors.deepBlue, fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>
-                                        Explore More
-                                        <div style={{ width: '40px', height: '40px', background: colors.deepBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '18px' }}>→</div>
-                                    </motion.div>
-                                </div>
-                            </AnimatedCard>
-
-                            <AnimatedCard>
-                                <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 15px 50px rgba(0,0,0,0.12)', border: `1px solid ${colors.brightBlue}20`, height: '500px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: colors.brightBlue + '20', borderRadius: '0 24px 0 60px' }} />
-                                    <ImagePlaceholder height={240} />
-                                    <h3 style={{ fontSize: '24px', fontWeight: 700, color: colors.navy, marginBottom: '16px', marginTop: '24px' }}>Experience MIFC</h3>
-                                    <p style={{ fontSize: '16px', color: colors.navy, opacity: 0.8, lineHeight: 1.6, marginBottom: '20px' }}>An unparalleled destination for residents and visitors with luxury amenities...</p>
-                                    <motion.div whileHover={{ x: 8 }} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: colors.brightBlue, fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>
-                                        Explore More
-                                        <div style={{ width: '40px', height: '40px', background: colors.brightBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '18px' }}>→</div>
-                                    </motion.div>
-                                </div>
-                            </AnimatedCard>
-
-                        </div>
-                    </div>
-                </section>
-
-                <section style={{ minHeight: '100vh', background: colors.futureBg, display: 'flex', alignItems: 'center', padding: '80px', position: 'relative' }}>
-                    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-                        <h2 style={{ fontSize: '40px', fontWeight: 800, textAlign: 'center', marginBottom: '60px', color: 'white' }}>MIFC is leading the future of finance</h2>
+                        <h2 style={{ fontSize: '40px', fontWeight: 400, textAlign: 'center', marginBottom: '60px', color: 'white', fontFamily: '"Reckless Neue", serif' }}>MIFC is leading the future of finance</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
 
                             <AnimatedCard>
@@ -938,66 +838,115 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     </div>
                 </section>
 
-                <section style={{ minHeight: '100vh', background: colors.whatsOnBg, display: 'flex', alignItems: 'center', padding: '80px' }}>
-                    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                            <h2 style={{ fontSize: '40px', fontWeight: 800, color: 'white', marginBottom: '12px' }}>What's on in MIFC</h2>
-                            <p style={{ fontSize: '16px', color: colors.lightCyan, opacity: 0.9 }}>Latest Blogs, News, and Podcasts</p>
-                        </div>
+                <section style={{ minWidth: '100vw', height: '100vh', background: colors.whatsOnBg, display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+            <h2 style={{ fontSize: '40px', fontWeight: 400, color: 'white', marginBottom: '12px', fontFamily: '"Reckless Neue", serif' }}>What's on in MIFC</h2>
+            <p style={{ fontSize: '16px', color: colors.lightCyan, opacity: 0.9 }}>Latest Blogs, News, and Podcasts</p>
+        </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '50px', flexWrap: 'wrap' }}>
-                            {['All', 'Business', 'Store', 'Innovation', 'Sustainability', 'Insights'].map((filter, i) => (
-                                <button key={filter} style={{ padding: '8px 20px', background: i === 0 ? colors.turquoise : 'transparent', color: i === 0 ? 'white' : colors.lightCyan, border: `1px solid ${colors.turquoise}`, borderRadius: '20px', fontSize: '14px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.3s ease' }}>{filter}</button>
-                            ))}
-                        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '50px', flexWrap: 'wrap' }}>
+            {['All', 'Business', 'Store', 'Innovation', 'Sustainability', 'Insights'].map((filter, i) => (
+                <button key={filter} style={{ padding: '8px 20px', background: i === 0 ? colors.turquoise : 'transparent', color: i === 0 ? 'white' : colors.lightCyan, border: `1px solid ${colors.turquoise}`, borderRadius: '20px', fontSize: '14px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.3s ease' }}>{filter}</button>
+            ))}
+        </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
-                            {[
-                                { title: 'A vibrant destination to shop', date: 'Dec 23, 2024', category: 'Retail' },
-                                { title: 'Dining options to suit all tastes', date: 'Dec 23, 2024', category: 'Lifestyle' },
-                                { title: 'A world of art, in one place', date: 'Dec 23, 2024', category: 'Culture' }
-                            ].map((article, i) => (
-                                <AnimatedCard key={i}>
-                                    <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', border: `1px solid ${colors.turquoise}20`, borderRadius: '24px', padding: '40px', height: '450px', position: 'relative', overflow: 'hidden' }}>
-                                        <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: colors.turquoise + '15', borderRadius: '0 24px 0 60px' }} />
-                                        <ImagePlaceholder height={200} />
-                                        <div style={{ position: 'absolute', top: '20px', left: '20px', padding: '4px 12px', background: colors.turquoise, color: 'white', borderRadius: '12px', fontSize: '10px', fontWeight: 600 }}>{article.category}</div>
-                                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'white', marginBottom: '12px', marginTop: '20px', lineHeight: 1.3 }}>{article.title}</h3>
-                                        <p style={{ fontSize: '14px', color: colors.lightCyan, opacity: 0.8, marginBottom: '20px' }}>{article.date} • 4 mins read</p>
-                                        <motion.div whileHover={{ x: 8 }} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: colors.turquoise, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>
-                                            Read More
-                                            <div style={{ width: '32px', height: '32px', background: colors.turquoise, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px' }}>→</div>
-                                        </motion.div>
-                                    </div>
-                                </AnimatedCard>
-                            ))}
-                        </div>
-
-                        <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                            <button style={{ padding: '14px 28px', background: 'transparent', color: colors.turquoise, border: `2px solid ${colors.turquoise}`, borderRadius: '30px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s ease' }}>See more articles</button>
-                        </div>
-
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
+            {[
+                { title: 'A vibrant destination to shop', date: 'Dec 23, 2024', category: 'Retail' },
+                { title: 'Dining options to suit all tastes', date: 'Dec 23, 2024', category: 'Lifestyle' },
+                { title: 'A world of art, in one place', date: 'Dec 23, 2024', category: 'Culture' }
+            ].map((article, i) => (
+                <AnimatedCard key={i}>
+                    <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', border: `1px solid ${colors.turquoise}20`, borderRadius: '24px', padding: '40px', height: '450px', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: colors.turquoise + '15', borderRadius: '0 24px 0 60px' }} />
+                        <ImagePlaceholder height={200} />
+                        <div style={{ position: 'absolute', top: '20px', left: '20px', padding: '4px 12px', background: colors.turquoise, color: 'white', borderRadius: '12px', fontSize: '10px', fontWeight: 600 }}>{article.category}</div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'white', marginBottom: '12px', marginTop: '20px', lineHeight: 1.3 }}>{article.title}</h3>
+                        <p style={{ fontSize: '14px', color: colors.lightCyan, opacity: 0.8, marginBottom: '20px' }}>{article.date} • 4 mins read</p>
+                        <motion.div whileHover={{ x: 8 }} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: colors.turquoise, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>
+                            Read More
+                            <div style={{ width: '32px', height: '32px', background: colors.turquoise, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px' }}>→</div>
+                        </motion.div>
                     </div>
-                </section>
+                </AnimatedCard>
+            ))}
+        </div>
 
-                <section style={{ minHeight: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ width: '120px', height: '120px', margin: '0 auto 30px', background: `linear-gradient(135deg,${colors.turquoise},${colors.lightCyan})`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: 'white', boxShadow: '0 10px 30px rgba(13,219,204,0.3)' }}>🏢</div>
-                        <h2 style={{ fontSize: '36px', fontWeight: 800, color: colors.turquoise, marginBottom: '16px' }}>MIFC</h2>
-                        <p style={{ fontSize: '18px', color: colors.navy, opacity: 0.8, marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px' }}>Copyright © Maldives International Financial Centre. All rights reserved.</p>
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+            <button style={{ padding: '14px 28px', background: 'transparent', color: colors.turquoise, border: `2px solid ${colors.turquoise}`, borderRadius: '30px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s ease' }}>See more articles</button>
+        </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '40px' }}>
-                            <motion.a href="#" whileHover={{ scale: 1.2, rotate: 5 }} style={{ width: '50px', height: '50px', background: colors.brightBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none', fontSize: '20px', boxShadow: '0 8px 20px rgba(0,148,251,0.3)' }}>in</motion.a>
-                            <motion.a href="#" whileHover={{ scale: 1.2, rotate: -5 }} style={{ width: '50px', height: '50px', background: colors.turquoise, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none', fontSize: '18px', boxShadow: '0 8px 20px rgba(13,219,204,0.3)' }}>𝕏</motion.a>
-                            <motion.a href="#" whileHover={{ scale: 1.2, rotate: 5 }} style={{ width: '50px', height: '50px', background: colors.deepBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none', fontSize: '18px', boxShadow: '0 8px 20px rgba(59,118,216,0.3)' }}>📷</motion.a>
-                            <motion.a href="#" whileHover={{ scale: 1.2, rotate: -5 }} style={{ width: '50px', height: '50px', background: colors.brightBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none', fontSize: '18px', boxShadow: '0 8px 20px rgba(0,148,251,0.3)' }}>▶</motion.a>
+    </div>
+</section>
+
+                <section style={{ minWidth: '100vw', height: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+                    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                            <div style={{ width: '100px', height: '100px', margin: '0 auto 20px', background: `linear-gradient(135deg,${colors.turquoise},${colors.lightCyan})`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', color: 'white' }}>🏢</div>
+                            <h2 style={{ fontSize: '32px', fontWeight: 400, color: colors.turquoise, marginBottom: '12px', fontFamily: '"Reckless Neue", serif' }}>MIFC</h2>
+                            <p style={{ fontSize: '16px', color: colors.navy, opacity: 0.8, maxWidth: '600px', margin: '0 auto' }}>Copyright © Maldives International Financial Centre. All rights reserved.</p>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '60px', marginBottom: '60px' }}>
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.navy, marginBottom: '20px' }}>About</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>World's Leading Destination</a>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Terms & Conditions</a>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Privacy Policy</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.navy, marginBottom: '20px' }}>Business</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Financial Businesses</a>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Non-financial Businesses</a>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Retail and Leisure</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.navy, marginBottom: '20px' }}>Innovation Hub</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Blockchain and AI Technologies</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.navy, marginBottom: '20px' }}>Lifestyle & Wellbeing</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Sustainable Development</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.navy, marginBottom: '20px' }}>Services</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Contact</a>
+                                    <a href="#" style={{ fontSize: '14px', color: colors.navy, opacity: 0.7, textDecoration: 'none', transition: 'all 0.3s ease' }}>Media</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ textAlign: 'center', borderTop: `1px solid ${colors.turquoise}20`, paddingTop: '40px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px' }}>
+                                <motion.a href="#" whileHover={{ scale: 1.2 }} style={{ width: '40px', height: '40px', background: colors.brightBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none' }}>in</motion.a>
+                                <motion.a href="#" whileHover={{ scale: 1.2 }} style={{ width: '40px', height: '40px', background: colors.turquoise, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none' }}>𝕏</motion.a>
+                                <motion.a href="#" whileHover={{ scale: 1.2 }} style={{ width: '40px', height: '40px', background: colors.deepBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none' }}>📷</motion.a>
+                                <motion.a href="#" whileHover={{ scale: 1.2 }} style={{ width: '40px', height: '40px', background: colors.brightBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none' }}>▶</motion.a>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                                <motion.button whileHover={{ scale: 1.05 }} style={{ padding: '16px 32px', background: colors.brightBlue, color: 'white', border: 'none', borderRadius: '30px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,148,251,0.3)' }}>Apply Online</motion.button>
+                                <motion.button whileHover={{ scale: 1.05 }} style={{ padding: '16px 32px', background: 'transparent', color: colors.turquoise, border: `2px solid ${colors.turquoise}`, borderRadius: '30px', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>Request callback</motion.button>
+                            </div>
                         </div>
                     </div>
                 </section>
 
             </div>
 
-            {/* Top Progress Bar */}
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '4px', background: colors.turquoise, transformOrigin: 'left', transform: `scaleX(${scrollProgress / 100})`, zIndex: 1001, transition: 'transform 0.1s ease' }} />
 
             {/* Fixed Bottom Buttons */}
@@ -1092,12 +1041,8 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                 </motion.button>
             </div>
 
-            <div style={{ position: 'fixed', bottom: 20, right: 20, height: '60px', width: '4px', background: `${colors.turquoise}20`, borderRadius: '2px', zIndex: 1001 }}>
-                <div style={{ height: `${scrollProgress}%`, background: colors.turquoise, borderRadius: '2px', transition: 'height 0.1s ease' }} />
-            </div>
-
         </div>
     );
 };
 
-export default MIFCVertical;
+export default MIFCHorizontal;

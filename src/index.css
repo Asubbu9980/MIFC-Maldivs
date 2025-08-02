@@ -1,6 +1,18 @@
+@font-face {
+    font-family: 'Reckless Neue';
+    src: url('./assets/reckless/RecklessNeue-Regular.eot');
+    src: url('./assets/reckless/RecklessNeue-Regular.eot?#iefix') format('embedded-opentype'),
+        url('./assets/reckless/RecklessNeue-Regular.woff2') format('woff2'),
+        url('./assets/reckless/RecklessNeue-Regular.woff') format('woff'),
+        url('./assets/reckless/RecklessNeue-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Reckless Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
