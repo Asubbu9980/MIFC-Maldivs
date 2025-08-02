@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import HeroImage from "../../assets/Hero.png"
+import HeroImage from "../../assets/HeroImages/hero1.png";
+import { ImagePlaceholder, BusinessCard, AnimatedCard } from '../Common/CommonComponents';
 
 const colors = {
     turquoise: '#0ddbcc',
@@ -11,6 +12,8 @@ const colors = {
     futureBg: '#3B76D8',
     whatsOnBg: '#0C347A'
 };
+
+// ...existing code...
 
 const MIFCVertical = () => {
     const containerRef = useRef(null);
@@ -53,6 +56,8 @@ const MIFCVertical = () => {
     const ImagePlaceholder = ({ height = 300, src = null, alt = "Image", className = "" }) => (
         <div className={className} style={{ height, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${colors.turquoise}20`, position: 'relative' }}>
             {src ? (
+
+
                 <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
                 <div style={{ height: '100%', background: colors.lightCyan, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px', fontWeight: 600 }}>
@@ -62,31 +67,15 @@ const MIFCVertical = () => {
         </div>
     );
 
-    const BusinessCard = ({ icon, title, description, buttonColor = 'turquoise', buttonText = 'Get started' }) => (
-        <motion.div whileHover={{ y: -8, scale: 1.02 }} style={{ cursor: 'pointer' }}>
-            <div style={{ background: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', height: '320px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                    <div style={{ fontSize: '48px', color: colors[buttonColor], marginBottom: '20px', textAlign: 'center' }}>{icon}</div>
-                    <h3 style={{ fontSize: '20px', fontWeight: 700, color: colors.navy, marginBottom: '16px', textAlign: 'center' }}>{title}</h3>
-                    <p style={{ fontSize: '14px', color: colors.navy, opacity: 0.8, lineHeight: 1.5, textAlign: 'center' }}>{description}</p>
-                </div>
-                <motion.button whileHover={{ scale: 1.05 }} style={{ width: '100%', padding: '12px 24px', background: colors[buttonColor], color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    {buttonText} <span>→</span>
-                </motion.button>
-            </div>
-        </motion.div>
-    );
-
-    const AnimatedCard = ({ children }) => (
-        <motion.div whileHover={{ y: -15, scale: 1.03, transition: { duration: 0.4, ease: 'easeOut' } }} style={{ cursor: 'pointer', transformOrigin: 'center' }}>
-            {children}
-        </motion.div>
-    );
-
+    // ...existing code...
     return (
         <div style={{ height: '100vh', overflow: 'hidden', background: colors.navy }}>
 
             <style>{`
+* {
+    font-family: 'Reckless Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+}
+
 .vertical-container::-webkit-scrollbar { 
     width: 8px; 
 }

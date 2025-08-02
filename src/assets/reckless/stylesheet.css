@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'Reckless Neue';
+    src: url('RecklessNeue-Regular.eot');
+    src: url('RecklessNeue-Regular.eot?#iefix') format('embedded-opentype'),
+        url('RecklessNeue-Regular.woff2') format('woff2'),
+        url('RecklessNeue-Regular.woff') format('woff'),
+        url('RecklessNeue-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
