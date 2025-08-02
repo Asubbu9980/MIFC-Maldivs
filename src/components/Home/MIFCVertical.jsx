@@ -12,7 +12,7 @@ const colors = {
     whatsOnBg: '#0C347A'
 };
 
-const MIFCHorizontal = () => {
+const MIFCVertical = () => {
     const containerRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
     const [navOpacity, setNavOpacity] = useState(1);
@@ -22,47 +22,29 @@ const MIFCHorizontal = () => {
         const container = containerRef.current;
         if (!container) return;
 
-        let isScrolling = false;
-
-        const handleWheel = (e) => {
-            if (isScrolling) return;
-            e.preventDefault();
-            isScrolling = true;
-
-            const delta = e.deltaY || e.deltaX;
-            const scrollAmount = delta * 1.5;
-
-            container.scrollBy({
-                left: scrollAmount,
-                behavior: 'auto'
-            });
-
-            setTimeout(() => {
-                isScrolling = false;
-            }, 10);
-        };
-
         const handleScroll = () => {
-            const progress = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
+            const progress = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
             setScrollProgress(progress);
+            
+            // Update nav opacity based on scroll position
+            const opacity = container.scrollTop > 50 ? 0.95 : 1;
+            setNavOpacity(opacity);
         };
 
         const handleKeyDown = (e) => {
-            if (e.key === 'ArrowLeft') {
+            if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                container.scrollBy({ left: -300, behavior: 'smooth' });
-            } else if (e.key === 'ArrowRight') {
+                container.scrollBy({ top: -300, behavior: 'smooth' });
+            } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                container.scrollBy({ left: 300, behavior: 'smooth' });
+                container.scrollBy({ top: 300, behavior: 'smooth' });
             }
         };
 
-        container.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('scroll', handleScroll);
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('scroll', handleScroll);
             document.removeEventListener('keydown', handleKeyDown);
         };
@@ -105,11 +87,31 @@ const MIFCHorizontal = () => {
         <div style={{ height: '100vh', overflow: 'hidden', background: colors.navy }}>
 
             <style>{`
-.horizontal-container::-webkit-scrollbar { display: none; }
-.horizontal-container { scrollbar-width: none; }
+.vertical-container::-webkit-scrollbar { 
+    width: 8px; 
+}
+.vertical-container::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+.vertical-container::-webkit-scrollbar-thumb { 
+    background: ${colors.turquoise}40; 
+    border-radius: 4px; 
+}
+.vertical-container::-webkit-scrollbar-thumb:hover { 
+    background: ${colors.turquoise}60; 
+}
+.vertical-container { 
+    scrollbar-width: thin; 
+    scrollbar-color: ${colors.turquoise}40 transparent; 
+}
 @media (max-width: 768px) {
-.horizontal-container { flex-direction: column !important; overflow-y: auto !important; overflow-x: hidden !important; }
-.horizontal-container > section { min-width: 100% !important; }
+.vertical-container { 
+    padding: 0 20px !important; 
+}
+.vertical-container > section { 
+    min-height: 100vh !important; 
+    padding: 40px 20px !important; 
+}
 }
 .dropdown-menu {
 position: absolute;
@@ -218,7 +220,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
 }
 `}</style>
 
-            <motion.nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${colors.turquoise}30`, padding: '16px 0', transition: 'opacity 0.1s ease' }}>
+            <motion.nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, background: `rgba(255,255,255,${navOpacity})`, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${colors.turquoise}30`, padding: '16px 0', transition: 'all 0.3s ease' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>
                     <div style={{ fontSize: '24px', fontWeight: 800, color: colors.turquoise }}>MIFC</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
@@ -228,9 +230,9 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                 </div>
             </motion.nav>
 
-            <div ref={containerRef} className="horizontal-container" style={{ display: 'flex', height: '100vh', overflowX: 'auto', overflowY: 'hidden', scrollBehavior: 'smooth' }}>
+            <div ref={containerRef} className="vertical-container" style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden', scrollBehavior: 'smooth' }}>
 
-                <section style={{ minWidth: '100vw', height: '100vh', position: 'relative', background: colors.navy, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <section style={{ minHeight: '100vh', position: 'relative', background: colors.navy, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
                         <ImagePlaceholder src={HeroImage} height="100vh" alt="MIFC Hero" />
                     </div>
@@ -244,7 +246,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     </motion.div>
                 </section>
 
-                <section style={{ minWidth: '100vw', height: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+                <section style={{ minHeight: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', padding: '80px' }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
                         <h2 style={{ fontSize: '32px', fontWeight: 700, color: colors.turquoise, marginBottom: '60px' }}>MIFC Business Categories</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '30px' }}>
@@ -276,7 +278,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     </div>
                 </section>
 
-                <section style={{ minWidth: '100vw', height: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+                <section style={{ minHeight: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '80px' }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
 
@@ -323,7 +325,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     </div>
                 </section>
 
-                <section style={{ minWidth: '100vw', height: '100vh', background: colors.futureBg, display: 'flex', alignItems: 'center', padding: '0 80px', position: 'relative' }}>
+                <section style={{ minHeight: '100vh', background: colors.futureBg, display: 'flex', alignItems: 'center', padding: '80px', position: 'relative' }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
                         <h2 style={{ fontSize: '40px', fontWeight: 800, textAlign: 'center', marginBottom: '60px', color: 'white' }}>MIFC is leading the future of finance</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
@@ -374,7 +376,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     </div>
                 </section>
 
-                <section style={{ minWidth: '100vw', height: '100vh', background: colors.whatsOnBg, display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+                <section style={{ minHeight: '100vh', background: colors.whatsOnBg, display: 'flex', alignItems: 'center', padding: '80px' }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
                         <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                             <h2 style={{ fontSize: '40px', fontWeight: 800, color: 'white', marginBottom: '12px' }}>What's on in MIFC</h2>
@@ -416,7 +418,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     </div>
                 </section>
 
-                <section style={{ minWidth: '100vw', height: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 80px' }}>
+                <section style={{ minHeight: '100vh', background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px' }}>
                     <div style={{ textAlign: 'center' }}>
                         <div style={{ width: '120px', height: '120px', margin: '0 auto 30px', background: `linear-gradient(135deg,${colors.turquoise},${colors.lightCyan})`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: 'white', boxShadow: '0 10px 30px rgba(13,219,204,0.3)' }}>🏢</div>
                         <h2 style={{ fontSize: '36px', fontWeight: 800, color: colors.turquoise, marginBottom: '16px' }}>MIFC</h2>
@@ -438,10 +440,12 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
 
             </div>
 
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '4px', background: colors.turquoise, transformOrigin: 'left', transform: `scaleX(${scrollProgress / 100})`, zIndex: 1001, transition: 'transform 0.1s ease' }} />
+            <div style={{ position: 'fixed', bottom: 20, right: 20, height: '60px', width: '4px', background: `${colors.turquoise}20`, borderRadius: '2px', zIndex: 1001 }}>
+                <div style={{ height: `${scrollProgress}%`, background: colors.turquoise, borderRadius: '2px', transition: 'height 0.1s ease' }} />
+            </div>
 
         </div>
     );
 };
 
-export default MIFCHorizontal;
+export default MIFCVertical;

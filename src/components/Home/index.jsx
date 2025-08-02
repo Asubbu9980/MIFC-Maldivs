@@ -22,49 +22,93 @@ const MIFCHorizontal = () => {
         const container = containerRef.current;
         if (!container) return;
 
+        let isScrolling = false;
+        let scrollTimeout;
+
         const handleWheel = (e) => {
-            e.preventDefault();
-            const delta = e.deltaY * 2;
-            container.scrollLeft = Math.max(0, Math.min(container.scrollWidth - container.clientWidth, container.scrollLeft + delta));
+            // Allow natural horizontal scrolling but enhance vertical wheel to horizontal scroll
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                e.preventDefault();
+                const scrollSpeed = e.deltaY * 3; // Increased speed multiplier
+                
+                container.scrollBy({
+                    left: scrollSpeed,
+                    behavior: 'auto' // Use auto for immediate response
+                });
+            }
         };
 
-        const handleTouchStart = (e) => {
-            container.touchStartX = e.touches[0].clientX;
-            container.scrollStartX = container.scrollLeft;
-        };
-
-        const handleTouchMove = (e) => {
-            if (!container.touchStartX) return;
-            e.preventDefault();
-            const deltaX = container.touchStartX - e.touches[0].clientX;
-            container.scrollLeft = container.scrollStartX + deltaX;
-        };
-
-        const handleTouchEnd = () => {
-            container.touchStartX = null;
-            container.scrollStartX = null;
+        const handleKeyDown = (e) => {
+            const scrollAmount = 500; // Increased scroll amount for faster navigation
+            
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
         };
 
         const handleScroll = () => {
+            if (!isScrolling) {
+                isScrolling = true;
+            }
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isScrolling = false;
+            }, 100);
+
             const progress = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
             setScrollProgress(progress);
-            const fadePoint = container.clientWidth * 0.3;
-            const opacity = Math.max(0, 1 - (container.scrollLeft / fadePoint));
+            
+            // Smooth nav opacity transition
+            const fadePoint = container.clientWidth * 0.2;
+            const opacity = Math.max(0.7, 1 - (container.scrollLeft / fadePoint));
             setNavOpacity(opacity);
         };
 
+        // Enhanced touch handling for better mobile experience
+        let startX = 0;
+        let startScrollLeft = 0;
+
+        const handleTouchStart = (e) => {
+            startX = e.touches[0].pageX;
+            startScrollLeft = container.scrollLeft;
+            container.style.scrollBehavior = 'auto'; // Disable smooth scrolling during touch
+        };
+
+        const handleTouchMove = (e) => {
+            if (!startX) return;
+            
+            const currentX = e.touches[0].pageX;
+            const diffX = (startX - currentX) * 2; // Increase touch sensitivity
+            
+            container.scrollLeft = startScrollLeft + diffX;
+        };
+
+        const handleTouchEnd = () => {
+            startX = 0;
+            startScrollLeft = 0;
+            container.style.scrollBehavior = 'smooth'; // Re-enable smooth scrolling
+        };
+
         container.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('touchstart', handleTouchStart, { passive: false });
-        container.addEventListener('touchmove', handleTouchMove, { passive: false });
-        container.addEventListener('touchend', handleTouchEnd);
-        container.addEventListener('scroll', handleScroll);
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+        document.addEventListener('keydown', handleKeyDown);
 
         return () => {
             container.removeEventListener('wheel', handleWheel);
+            container.removeEventListener('scroll', handleScroll);
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
-            container.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('keydown', handleKeyDown);
+            clearTimeout(scrollTimeout);
         };
     }, []);
 
@@ -105,11 +149,29 @@ const MIFCHorizontal = () => {
         <div style={{ height: '100vh', overflow: 'hidden', background: colors.navy }}>
 
             <style>{`
-.horizontal-container::-webkit-scrollbar { display: none; }
-.horizontal-container { scrollbar-width: none; }
+.horizontal-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x mandatory;
+}
+.horizontal-container::-webkit-scrollbar { 
+    display: none; 
+}
+.horizontal-container > section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+}
 @media (max-width: 768px) {
-.horizontal-container { flex-direction: column !important; overflow-y: auto !important; overflow-x: hidden !important; }
-.horizontal-container > section { min-width: 100% !important; }
+    .horizontal-container { 
+        flex-direction: column !important; 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important;
+        scroll-snap-type: y mandatory;
+    }
+    .horizontal-container > section { 
+        min-width: 100% !important;
+        scroll-snap-align: start;
+    }
 }
 .dropdown-menu {
 position: absolute;
@@ -289,7 +351,18 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                 </div>
             </motion.nav>
 
-            <div ref={containerRef} className="horizontal-container" style={{ display: 'flex', height: '100vh', overflowX: 'auto', overflowY: 'hidden', scrollBehavior: 'smooth' }}>
+            <div ref={containerRef} className="horizontal-container" style={{ 
+                display: 'flex', 
+                height: '100vh', 
+                overflowX: 'auto', 
+                overflowY: 'hidden', 
+                scrollBehavior: 'smooth',
+                cursor: 'grab'
+            }} 
+            onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
+            onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
+            onMouseLeave={(e) => e.currentTarget.style.cursor = 'grab'}
+            >
 
                 <section style={{ minWidth: '100vw', height: '100vh', position: 'relative', background: colors.navy, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>

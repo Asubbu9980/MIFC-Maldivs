@@ -11,7 +11,10 @@ function App() {
     //   <AppRoutes />
     // </Box>
     <>
-      <MIFCHorizontal />
+    
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </>
   );
 }
