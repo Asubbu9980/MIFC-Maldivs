@@ -24,7 +24,6 @@ const colors = {
 const MIFCHorizontal = () => {
     const containerRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
-    const [navOpacity, setNavOpacity] = useState(1);
     const [activeDropdown, setActiveDropdown] = useState(null);
     
     // Hero carousel state
@@ -112,11 +111,6 @@ const MIFCHorizontal = () => {
 
             const progress = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
             setScrollProgress(progress);
-            
-            // Hide nav when scrolling away from first screen
-            const firstScreenWidth = container.clientWidth;
-            const isOnFirstScreen = container.scrollLeft < firstScreenWidth * 0.1; // Hide when 10% past first screen
-            setNavOpacity(isOnFirstScreen ? 1 : 0);
         };
 
         // Enhanced touch handling for better mobile experience
@@ -214,7 +208,8 @@ const MIFCHorizontal = () => {
                 width: '100%', 
                 height: '100%', 
                 overflow: 'hidden',
-                background: '#000'
+                background: '#000',
+               
             }}>
                 {/* Smooth cross-fade with simultaneous image loading */}
                 <AnimatePresence>
@@ -263,11 +258,8 @@ const MIFCHorizontal = () => {
                 </AnimatePresence>
                 
                 {/* Left Navigation Arrow */}
-                <motion.button
+                {/* <motion.button
                     onClick={goToPrevious}
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: 0.8 }}
                     whileHover={{ 
                         scale: 1.05, 
                         backgroundColor: colors.turquoise,
@@ -299,14 +291,11 @@ const MIFCHorizontal = () => {
                     }}
                 >
                     ‹
-                </motion.button>
+                </motion.button> */}
 
                 {/* Right Navigation Arrow */}
-                <motion.button
+                {/* <motion.button
                     onClick={goToNext}
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: 0.8 }}
                     whileHover={{ 
                         scale: 1.05, 
                         backgroundColor: colors.turquoise,
@@ -338,26 +327,24 @@ const MIFCHorizontal = () => {
                     }}
                 >
                     ›
-                </motion.button>
+                </motion.button> */}
                 
-                {/* Carousel indicators */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 1 }}
+                {/* Carousel indicators - Slash Style */}
+                <div 
                     style={{ 
                         position: 'absolute', 
-                        bottom: '40px', 
-                        left: '50%', 
+                        bottom: '200px', 
+                        left: '80%', 
                         transform: 'translateX(-50%) translateZ(0)', 
                         display: 'flex', 
-                        gap: '16px',
+                        gap: '20px',
                         zIndex: 3,
-                        padding: '12px 20px',
-                        background: 'rgba(0, 0, 0, 0.2)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '30px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                        padding: '20px 28px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '16px',
+                        border: `3px solid ${colors.turquoise}`,
+                        boxShadow: `0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px ${colors.turquoise}40`
                     }}
                 >
                     {images.map((_, index) => (
@@ -365,31 +352,125 @@ const MIFCHorizontal = () => {
                             key={index}
                             onClick={() => setCurrentImageIndex(index)}
                             animate={{
-                                scale: index === currentIndex ? 1.3 : 1,
-                                opacity: index === currentIndex ? 1 : 0.5,
-                                backgroundColor: index === currentIndex ? colors.turquoise : 'rgba(255,255,255,0.6)'
+                                scale: index === currentIndex ? 1.4 : 1,
+                                opacity: index === currentIndex ? 1 : 0.7,
                             }}
                             transition={{ 
                                 duration: 0.3, 
                                 ease: [0.25, 0.46, 0.45, 0.94]
                             }}
                             style={{
-                                width: '10px',
-                                height: '10px',
-                                borderRadius: '50%',
+                                width: '24px',
+                                height: '3px',
+                                background: index === currentIndex ? colors.turquoise : colors.navy,
                                 cursor: 'pointer',
-                                border: index === currentIndex ? `2px solid ${colors.turquoise}` : '1px solid rgba(255,255,255,0.3)',
-                                transform: 'translateZ(0)',
-                                backfaceVisibility: 'hidden'
+                                borderRadius: '1px',
+                                transform: 'rotate(60deg)',
+                                transformOrigin: 'center',
+                                position: 'relative',
+                                boxShadow: index === currentIndex ? 
+                                    `0 0 12px ${colors.turquoise}, 0 2px 4px rgba(0,0,0,0.3)` : 
+                                    '0 1px 3px rgba(0,0,0,0.2)',
+                                border: index === currentIndex ? `1px solid white` : 'none'
                             }}
                             whileHover={{ 
-                                scale: index === currentIndex ? 1.4 : 1.2,
+                                scale: index === currentIndex ? 1.6 : 1.2,
+                                opacity: 1,
+                                background: colors.turquoise,
+                                boxShadow: `0 0 20px ${colors.turquoise}, 0 4px 8px rgba(0,0,0,0.4)`,
                                 transition: { duration: 0.15 }
                             }}
-                            whileTap={{ scale: 0.8 }}
+                            whileTap={{ scale: 0.9 }}
                         />
                     ))}
-                </motion.div>
+                </div>
+
+                {/* Slash Navigation Controls - Bottom Right */}
+                <div 
+                    style={{ 
+                        position: 'absolute', 
+                        bottom: '120px', 
+                        right: '20px', 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        gap: '16px',
+                        zIndex: 1010,
+                        padding: '24px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '16px',
+                        border: `3px solid ${colors.turquoise}`,
+                        boxShadow: `0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px ${colors.turquoise}40`
+                    }}
+                >
+                    <div style={{
+                        fontSize: '12px',
+                        color: colors.navy,
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        marginBottom: '8px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        Navigate
+                    </div>
+                    {images.map((_, index) => (
+                        <motion.div
+                            key={`slash-${index}`}
+                            onClick={() => setCurrentImageIndex(index)}
+                            animate={{
+                                scale: index === currentIndex ? 1.6 : 1,
+                                opacity: index === currentIndex ? 1 : 0.8,
+                            }}
+                            transition={{ 
+                                duration: 0.3, 
+                                ease: [0.25, 0.46, 0.45, 0.94]
+                            }}
+                            style={{
+                                width: '40px',
+                                height: '6px',
+                                background: index === currentIndex ? colors.turquoise : colors.navy,
+                                cursor: 'pointer',
+                                borderRadius: '3px',
+                                transform: 'rotate(45deg)',
+                                transformOrigin: 'center',
+                                position: 'relative',
+                                boxShadow: index === currentIndex ? 
+                                    `0 0 20px ${colors.turquoise}, 0 4px 8px rgba(0,0,0,0.3)` : 
+                                    '0 2px 6px rgba(0,0,0,0.2)',
+                                border: index === currentIndex ? `2px solid white` : 'none'
+                            }}
+                            whileHover={{ 
+                                scale: index === currentIndex ? 1.7 : 1.3,
+                                opacity: 1,
+                                background: colors.turquoise,
+                                boxShadow: `0 0 24px ${colors.turquoise}, 0 6px 12px rgba(0,0,0,0.4)`,
+                                transition: { duration: 0.15 }
+                            }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            {/* Active indicator */}
+                            {index === currentIndex && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        width: '8px',
+                                        height: '8px',
+                                        background: 'white',
+                                        borderRadius: '50%',
+                                        boxShadow: '0 0 8px rgba(255,255,255,0.8)'
+                                    }}
+                                />
+                            )}
+                        </motion.div>
+                    ))}
+                </div>
 
                 {/* Loading overlay */}
                 {isLoading && (
@@ -562,10 +643,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     right: 0, 
                     zIndex: 1000, 
                     background: 'transparent', 
-                    padding: '16px 0', 
-                    opacity: navOpacity,
-                    visibility: navOpacity > 0 ? 'visible' : 'hidden',
-                    transition: 'opacity 0.3s ease, visibility 0.3s ease' 
+                    padding: '16px 0'
                 }}
             >
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>

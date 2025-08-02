@@ -7,7 +7,7 @@ import MIFCHorizontal from '../components/Home/MIFCHorizontal';
 const AppRoutes = () => {
     return (
         <Routes>
-            <Route path="/vertical" element={<MIFCVertical />} />
+            <Route path="/" element={<MIFCVertical />} />
             <Route path="/horizontal" element={<MIFCHorizontal />} />
         </Routes>
     );
