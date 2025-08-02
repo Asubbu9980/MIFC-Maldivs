@@ -24,6 +24,7 @@ const colors = {
 const MIFCHorizontal = () => {
     const containerRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
+    const [navOpacity, setNavOpacity] = useState(1);
     const [activeDropdown, setActiveDropdown] = useState(null);
     
     // Hero carousel state
@@ -111,6 +112,11 @@ const MIFCHorizontal = () => {
 
             const progress = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
             setScrollProgress(progress);
+            
+            // Hide nav completely when scrolling past first section (100vw)
+            const firstSectionWidth = window.innerWidth;
+            const opacity = container.scrollLeft < firstSectionWidth ? 1 : 0;
+            setNavOpacity(opacity);
         };
 
         // Enhanced touch handling for better mobile experience
@@ -643,7 +649,10 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                     right: 0, 
                     zIndex: 1000, 
                     background: 'transparent', 
-                    padding: '16px 0'
+                    padding: '16px 0',
+                    opacity: navOpacity,
+                    transition: 'opacity 0.3s ease',
+                    pointerEvents: navOpacity > 0 ? 'auto' : 'none'
                 }}
             >
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>
@@ -669,7 +678,7 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                                 onMouseEnter={() => setActiveDropdown(item.name)}
                                 onMouseLeave={() => setActiveDropdown(null)}
                             >
-                                <a href="#" style={{ fontSize: '20px', fontWeight: 600, color: colors.navy, textDecoration: 'none', transition: 'color 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <a href="#" style={{ fontSize: '20px', fontWeight: 600, color: 'white', textDecoration: 'none', transition: 'color 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {item.name}
                                     {item.dropdown && <span style={{ fontSize: '10px', color: colors.turquoise }}>▼</span>}
                                 </a>
