@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import '../../assets/reckless/stylesheet.css';
 
 const colors = {
     turquoise: '#0ddbcc',
@@ -16,7 +17,7 @@ export const ImagePlaceholder = ({ height = 300, src = null, alt = "Image", clas
         {src ? (
             <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         ) : (
-            <div style={{ height: '100%', background: colors.lightCyan, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px', fontWeight: 600 }}>
+            <div style={{ height: '100%', background: colors.lightCyan, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px', fontWeight: 600, fontFamily: '"Reckless Neue", serif' }}>
                 Image Placeholder
             </div>
         )}
@@ -24,15 +25,107 @@ export const ImagePlaceholder = ({ height = 300, src = null, alt = "Image", clas
 );
 
 export const BusinessCard = ({ icon, title, description, buttonColor = 'turquoise', buttonText = 'Get started' }) => (
-    <motion.div whileHover={{ y: -8, scale: 1.02 }} style={{ cursor: 'pointer' }}>
-        <div style={{ background: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', height: '320px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>
-                <div style={{ fontSize: '48px', color: colors[buttonColor], marginBottom: '20px', textAlign: 'center' }}>{icon}</div>
-                <h3 style={{ fontSize: '20px', fontWeight: 700, color: colors.navy, marginBottom: '16px', textAlign: 'center' }}>{title}</h3>
-                <p style={{ fontSize: '14px', color: colors.navy, opacity: 0.8, lineHeight: 1.5, textAlign: 'center' }}>{description}</p>
+    <motion.div 
+        whileHover={{ 
+            y: -8, 
+            transition: { duration: 0.3, ease: 'easeOut' }
+        }} 
+        style={{ cursor: 'pointer', height: '100%', width: '100%', maxWidth: '350px' }}
+    >
+        <div 
+            style={{ 
+                background: 'white', 
+                borderRadius: '16px', 
+                padding: '20px', 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)', 
+                height: '100%', 
+                width: '100%',
+                minHeight: '280px',
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between', 
+                fontFamily: '"Reckless Neue", serif',
+                border: '1px solid #f0f0f0',
+                transition: 'all 0.3s ease'
+            }}
+        >
+            {/* Icon/Image section at the top */}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                marginBottom: '12px'
+            }}>
+                <div style={{ 
+                    width: '60px', 
+                    height: '60px', 
+                    borderRadius: '50%', 
+                    background: colors[buttonColor], 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '24px',
+                    color: 'white',
+                    boxShadow: `0 4px 15px ${colors[buttonColor]}30`
+                }}>
+                    {icon}
+                </div>
             </div>
-            <motion.button whileHover={{ scale: 1.05 }} style={{ width: '100%', padding: '12px 24px', background: colors[buttonColor], color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                {buttonText} <span>→</span>
+
+            {/* Title */}
+            <h3 style={{ 
+                fontSize: '18px', 
+                fontWeight: 700, 
+                color: colors.navy, 
+                marginBottom: '8px', 
+                textAlign: 'center', 
+                fontFamily: '"Reckless Neue", serif',
+                lineHeight: 1.2
+            }}>
+                {title}
+            </h3>
+
+            {/* Description */}
+            <p style={{ 
+                fontSize: '13px', 
+                color: colors.navy, 
+                opacity: 0.7, 
+                lineHeight: 1.4, 
+                textAlign: 'center', 
+                fontFamily: '"Reckless Neue", serif',
+                margin: '0 0 16px 0',
+                flex: 1
+            }}>
+                {description}
+            </p>
+
+            {/* Get started button */}
+            <motion.button 
+                whileHover={{ 
+                    background: colors[buttonColor],
+                    color: 'white',
+                    transform: 'translateY(-2px)'
+                }} 
+                whileTap={{ scale: 0.98 }}
+                style={{ 
+                    width: '100%', 
+                    padding: '12px 20px', 
+                    background: 'transparent', 
+                    color: colors[buttonColor], 
+                    border: `2px solid ${colors[buttonColor]}`, 
+                    borderRadius: '8px', 
+                    fontSize: '14px', 
+                    fontWeight: 600, 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '6px', 
+                    fontFamily: '"Reckless Neue", serif',
+                    transition: 'all 0.3s ease'
+                }}
+            >
+                {buttonText} <span style={{ fontSize: '16px' }}>→</span>
             </motion.button>
         </div>
     </motion.div>
@@ -52,9 +145,10 @@ export const BusinessCardGrid = ({
     cards = [],
     padding = '80px',
     minHeight = '100vh',
-    cardStyle = 'default' // 'default' or 'advanced'
+    cardStyle = 'default', // 'default' or 'advanced'
+    cardWidth = null // Fixed width for cards (e.g., '300px')
 }) => (
-    <section style={{ 
+    <div style={{ 
         minHeight, 
         background: backgroundColor, 
         display: 'flex', 
@@ -64,7 +158,7 @@ export const BusinessCardGrid = ({
         width: '100%'
     }}>
         <div style={{ 
-            maxWidth: '1200px', 
+            maxWidth: '1400px', 
             margin: '0 auto', 
             width: '100%',
             display: 'flex',
@@ -73,10 +167,10 @@ export const BusinessCardGrid = ({
         }}>
             {title && (
                 <h2 style={{ 
-                    fontSize: '32px', 
+                    fontSize: 'clamp(24px, 4vw, 28px)', 
                     fontWeight: 700, 
                     color: colors[titleColor], 
-                    marginBottom: '60px', 
+                    marginBottom: '40px', 
                     fontFamily: '"Reckless Neue", serif',
                     textAlign: 'center',
                     width: '100%'
@@ -84,13 +178,19 @@ export const BusinessCardGrid = ({
                     {title}
                 </h2>
             )}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: `repeat(${columns}, 1fr)`, 
-                gap: '30px',
-                width: '100%',
-                justifyItems: 'center'
-            }}>
+            <div 
+                className="business-card-grid"
+                style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(4, 1fr)', 
+                    gap: '48px',
+                    width: '100%',
+                    maxWidth: '1400px',
+                    justifyItems: 'stretch',
+                    alignItems: 'stretch',
+                    margin: '0 auto'
+                }}
+            >
                 {cards.map((card, index) => (
                     cardStyle === 'advanced' ? (
                         <AnimatedCard key={index}>
@@ -104,7 +204,7 @@ export const BusinessCardGrid = ({
                                 position: 'relative', 
                                 overflow: 'hidden',
                                 width: '100%',
-                                maxWidth: '280px'
+                                maxWidth: '250px'
                             }}>
                                 <div style={{ 
                                     position: 'absolute', 
@@ -167,24 +267,23 @@ export const BusinessCardGrid = ({
                             </div>
                         </AnimatedCard>
                     ) : (
-                        <div key={index} style={{ width: '100%', maxWidth: '280px' }}>
-                            <BusinessCard
-                                icon={card.icon}
-                                title={card.title}
-                                description={card.description}
-                                buttonColor={card.buttonColor || 'turquoise'}
-                                buttonText={card.buttonText || 'Get started'}
-                            />
-                        </div>
+                        <BusinessCard
+                            key={index}
+                            icon={card.icon}
+                            title={card.title}
+                            description={card.description}
+                            buttonColor={card.buttonColor || 'turquoise'}
+                            buttonText={card.buttonText || 'Get started'}
+                        />
                     )
                 ))}
             </div>
         </div>
-    </section>
+    </div>
 );
 
-export const AboutSection = () => (
-    <section style={{ minWidth: '100vw', height: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '0' }}>
+export const AboutSection = ({ minWidth = '100vw' }) => (
+    <section style={{ minWidth, height: '100vh', background: 'white', display: 'flex', alignItems: 'center', padding: '0' }}>
         <div style={{ width: '100%', display: 'flex' }}>
             <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
                 
