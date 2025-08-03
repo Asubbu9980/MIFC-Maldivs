@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 
 import { AboutSection, BusinessCardGrid } from '../Common/CommonComponents';
+import HeroImageSection from '../Common/HeroImageSection';
 import '../../assets/reckless/stylesheet.css';
 import LOGO from '../../assets/MIFC_logo.svg';
 
@@ -27,46 +28,8 @@ const MIFCHorizontal = () => {
     const [navOpacity, setNavOpacity] = useState(1);
     const [activeDropdown, setActiveDropdown] = useState(null);
     
-    // Hero carousel state
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [heroImages, setHeroImages] = useState([hero1, hero2, hero3, hero4]);
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Hero carousel effect
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentImageIndex((prevIndex) => 
-                (prevIndex + 1) % heroImages.length
-            );
-        }, 5000); // Change image every 10 seconds
-
-        return () => clearInterval(interval);
-    }, [heroImages.length]);
-
-    // Function to fetch images from API (ready for integration)
-    const fetchHeroImages = async () => {
-        setIsLoading(true);
-        try {
-            // Replace this with your actual API call
-            // const response = await fetch('your-api-endpoint');
-            // const data = await response.json();
-            // setHeroImages(data.images || [hero1, hero2, hero3, hero4]);
-            
-            // For now, using local images
-            setHeroImages([hero1, hero2, hero3, hero4]);
-        } catch (error) {
-            console.error('Error fetching hero images:', error);
-            // Fallback to local images
-            setHeroImages([hero1, hero2, hero3, hero4]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Uncomment this to fetch images on component mount
-    // useEffect(() => {
-    //     fetchHeroImages();
-    // }, []);
+    // Hero images array for the carousel
+    const heroImages = [hero1, hero2, hero3, hero4];
 
     useEffect(() => {
         const container = containerRef.current;
@@ -194,317 +157,6 @@ const MIFCHorizontal = () => {
             {children}
         </motion.div>
     );
-
-    const HeroCarousel = ({ images, currentIndex }) => {
-        const goToPrevious = () => {
-            setCurrentImageIndex((prevIndex) => 
-                prevIndex === 0 ? images.length - 1 : prevIndex - 1
-            );
-        };
-
-        const goToNext = () => {
-            setCurrentImageIndex((prevIndex) => 
-                (prevIndex + 1) % images.length
-            );
-        };
-
-        return (
-            <div style={{ 
-                position: 'relative', 
-                width: '100%', 
-                height: '100%', 
-                overflow: 'hidden',
-                background: '#000',
-               
-            }}>
-                {/* Smooth cross-fade with simultaneous image loading */}
-                <AnimatePresence>
-                    {heroImages.map((image, index) => {
-                        const isActive = index === currentIndex;
-                        const isPrevious = index === (currentIndex === 0 ? heroImages.length - 1 : currentIndex - 1);
-                        
-                        if (!isActive && !isPrevious) return null;
-                        
-                        return (
-                            <motion.div
-                                key={`image-${index}`}
-                                initial={{ opacity: isActive ? 0 : 1 }}
-                                animate={{ opacity: isActive ? 1 : 0 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ 
-                                    duration: 1.8,
-                                    ease: [0.25, 0.46, 0.45, 0.94]
-                                }}
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    zIndex: isActive ? 2 : 1
-                                }}
-                            >
-                                <img
-                                    src={image}
-                                    alt={`Hero ${index + 1}`}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        display: 'block',
-                                        userSelect: 'none',
-                                        pointerEvents: 'none',
-                                        transform: 'translate3d(0, 0, 0)',
-                                        backfaceVisibility: 'hidden'
-                                    }}
-                                    draggable={false}
-                                />
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
-                
-                {/* Left Navigation Arrow */}
-                {/* <motion.button
-                    onClick={goToPrevious}
-                    whileHover={{ 
-                        scale: 1.05, 
-                        backgroundColor: colors.turquoise,
-                        transition: { duration: 0.15, ease: "easeOut" }
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{
-                        position: 'absolute',
-                        left: '40px',
-                        top: '50%',
-                        transform: 'translateY(-50%) translateZ(0)',
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '50%',
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        backdropFilter: 'blur(12px)',
-                        border: `1px solid rgba(255, 255, 255, 0.2)`,
-                        color: 'white',
-                        fontSize: '22px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 3,
-                        transition: 'all 0.15s ease-out',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                        backfaceVisibility: 'hidden'
-                    }}
-                >
-                    ‹
-                </motion.button> */}
-
-                {/* Right Navigation Arrow */}
-                {/* <motion.button
-                    onClick={goToNext}
-                    whileHover={{ 
-                        scale: 1.05, 
-                        backgroundColor: colors.turquoise,
-                        transition: { duration: 0.15, ease: "easeOut" }
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{
-                        position: 'absolute',
-                        right: '40px',
-                        top: '50%',
-                        transform: 'translateY(-50%) translateZ(0)',
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '50%',
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        backdropFilter: 'blur(12px)',
-                        border: `1px solid rgba(255, 255, 255, 0.2)`,
-                        color: 'white',
-                        fontSize: '22px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 3,
-                        transition: 'all 0.15s ease-out',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                        backfaceVisibility: 'hidden'
-                    }}
-                >
-                    ›
-                </motion.button> */}
-                
-                {/* Carousel indicators - Slash Style */}
-                <div 
-                    style={{ 
-                        position: 'absolute', 
-                        bottom: '200px', 
-                        left: '80%', 
-                        transform: 'translateX(-50%) translateZ(0)', 
-                        display: 'flex', 
-                        gap: '20px',
-                        zIndex: 3,
-                        padding: '20px 28px',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '16px',
-                        border: `3px solid ${colors.turquoise}`,
-                        boxShadow: `0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px ${colors.turquoise}40`
-                    }}
-                >
-                    {images.map((_, index) => (
-                        <motion.div
-                            key={index}
-                            onClick={() => setCurrentImageIndex(index)}
-                            animate={{
-                                scale: index === currentIndex ? 1.4 : 1,
-                                opacity: index === currentIndex ? 1 : 0.7,
-                            }}
-                            transition={{ 
-                                duration: 0.3, 
-                                ease: [0.25, 0.46, 0.45, 0.94]
-                            }}
-                            style={{
-                                width: '24px',
-                                height: '3px',
-                                background: index === currentIndex ? colors.turquoise : colors.navy,
-                                cursor: 'pointer',
-                                borderRadius: '1px',
-                                transform: 'rotate(60deg)',
-                                transformOrigin: 'center',
-                                position: 'relative',
-                                boxShadow: index === currentIndex ? 
-                                    `0 0 12px ${colors.turquoise}, 0 2px 4px rgba(0,0,0,0.3)` : 
-                                    '0 1px 3px rgba(0,0,0,0.2)',
-                                border: index === currentIndex ? `1px solid white` : 'none'
-                            }}
-                            whileHover={{ 
-                                scale: index === currentIndex ? 1.6 : 1.2,
-                                opacity: 1,
-                                background: colors.turquoise,
-                                boxShadow: `0 0 20px ${colors.turquoise}, 0 4px 8px rgba(0,0,0,0.4)`,
-                                transition: { duration: 0.15 }
-                            }}
-                            whileTap={{ scale: 0.9 }}
-                        />
-                    ))}
-                </div>
-
-                {/* Slash Navigation Controls - Bottom Right */}
-                <div 
-                    style={{ 
-                        position: 'absolute', 
-                        bottom: '120px', 
-                        right: '20px', 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        gap: '16px',
-                        zIndex: 1010,
-                        padding: '24px',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '16px',
-                        border: `3px solid ${colors.turquoise}`,
-                        boxShadow: `0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px ${colors.turquoise}40`
-                    }}
-                >
-                    <div style={{
-                        fontSize: '12px',
-                        color: colors.navy,
-                        fontWeight: 600,
-                        textAlign: 'center',
-                        marginBottom: '8px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px'
-                    }}>
-                        Navigate
-                    </div>
-                    {images.map((_, index) => (
-                        <motion.div
-                            key={`slash-${index}`}
-                            onClick={() => setCurrentImageIndex(index)}
-                            animate={{
-                                scale: index === currentIndex ? 1.6 : 1,
-                                opacity: index === currentIndex ? 1 : 0.8,
-                            }}
-                            transition={{ 
-                                duration: 0.3, 
-                                ease: [0.25, 0.46, 0.45, 0.94]
-                            }}
-                            style={{
-                                width: '40px',
-                                height: '6px',
-                                background: index === currentIndex ? colors.turquoise : colors.navy,
-                                cursor: 'pointer',
-                                borderRadius: '3px',
-                                transform: 'rotate(45deg)',
-                                transformOrigin: 'center',
-                                position: 'relative',
-                                boxShadow: index === currentIndex ? 
-                                    `0 0 20px ${colors.turquoise}, 0 4px 8px rgba(0,0,0,0.3)` : 
-                                    '0 2px 6px rgba(0,0,0,0.2)',
-                                border: index === currentIndex ? `2px solid white` : 'none'
-                            }}
-                            whileHover={{ 
-                                scale: index === currentIndex ? 1.7 : 1.3,
-                                opacity: 1,
-                                background: colors.turquoise,
-                                boxShadow: `0 0 24px ${colors.turquoise}, 0 6px 12px rgba(0,0,0,0.4)`,
-                                transition: { duration: 0.15 }
-                            }}
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            {/* Active indicator */}
-                            {index === currentIndex && (
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ duration: 0.3, ease: "easeOut" }}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        width: '8px',
-                                        height: '8px',
-                                        background: 'white',
-                                        borderRadius: '50%',
-                                        boxShadow: '0 0 8px rgba(255,255,255,0.8)'
-                                    }}
-                                />
-                            )}
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* Loading overlay */}
-                {isLoading && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 4
-                    }}>
-                        <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            style={{
-                                width: '40px',
-                                height: '40px',
-                                border: `3px solid ${colors.turquoise}`,
-                                borderTop: '3px solid transparent',
-                                borderRadius: '50%'
-                            }}
-                        />
-                    </div>
-                )}
-            </div>
-        );
-    };
 
     return (
         <div style={{ height: '100vh', overflow: 'hidden', background: colors.navy, fontFamily: '"Reckless Neue", serif' }}>
@@ -738,19 +390,81 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
             onMouseLeave={(e) => e.currentTarget.style.cursor = 'grab'}
             >
 
-                <section style={{ minWidth: '100vw', height: '100vh', position: 'relative', background: colors.navy, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-                        <HeroCarousel images={heroImages} currentIndex={currentImageIndex} />
-                    </div>
-                    <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, delay: 0.3 }} style={{ position: 'relative', zIndex: 2, textAlign: 'left', maxWidth: '600px', padding: '0 80px', color: 'white', marginLeft: '0' }}>
-                        <h1 style={{ fontSize: 'clamp(2.5rem,6vw,5rem)', fontWeight: 800, marginBottom: '24px', lineHeight: 1.1, color: 'white', textShadow: '0 4px 20px rgba(0,0,0,0.3)', fontFamily: '"Reckless Neue", serif' }}>Maldives International Financial Centre</h1>
+                <HeroImageSection 
+                    images={heroImages}
+                    activeDropdown={activeDropdown}
+                    title="Maldives International Financial Centre"
+                    style={{ minWidth: '100vw', height: '100vh' }}
+                >
+                    <motion.div 
+                        initial={{ opacity: 0, y: 50 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        transition={{ duration: 1.2, delay: 0.3 }} 
+                        style={{ 
+                            position: 'relative', 
+                            zIndex: 2, 
+                            textAlign: 'left', 
+                            maxWidth: '600px', 
+                            padding: '0 80px', 
+                            color: 'white',
+                            marginLeft: '0'
+                        }}
+                    >
+                        <h1 style={{ 
+                            fontSize: 'clamp(2.5rem,6vw,5rem)', 
+                            fontWeight: 800, 
+                            marginBottom: '24px', 
+                            lineHeight: 1.1, 
+                            color: 'white', 
+                            textShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                            fontFamily: '"Reckless Neue", serif'
+                        }}>
+                            Maldives International Financial Centre
+                        </h1>
                         {/* <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.8 }} style={{ fontSize: 'clamp(1.2rem,3vw,2rem)', fontWeight: 300, marginBottom: '40px', color: colors.lightCyan, opacity: 0.95, fontFamily: '"Reckless Neue", serif' }}>Rethinking finance. Redefining lifestyle.</motion.p> */}
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.2 }} style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-                            <button style={{ padding: '15px 24px', fontSize: '15px', fontWeight: 600, background: colors.turquoise, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', boxShadow: `0 2px 8px ${colors.turquoise}40`, transition: 'all 0.3s ease', fontFamily: '"Reckless Neue", serif' }}>Read more</button>
-                            <button style={{ padding: '15px 24px', fontSize: '15px', fontWeight: 600, background: 'transparent', color: 'white', border: '1px solid white', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.3s ease', fontFamily: '"Reckless Neue", serif' }}>Contact us</button>
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            transition={{ duration: 0.6, delay: 1.2 }} 
+                            style={{ 
+                                display: 'flex', 
+                                gap: '16px', 
+                                justifyContent: 'flex-start', 
+                                flexWrap: 'wrap' 
+                            }}
+                        >
+                            <button style={{ 
+                                padding: '15px 24px', 
+                                fontSize: '15px', 
+                                fontWeight: 600, 
+                                background: colors.turquoise, 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                cursor: 'pointer', 
+                                boxShadow: `0 2px 8px ${colors.turquoise}40`, 
+                                transition: 'all 0.3s ease', 
+                                fontFamily: '"Reckless Neue", serif' 
+                            }}>
+                                Read more
+                            </button>
+                            <button style={{ 
+                                padding: '15px 24px', 
+                                fontSize: '15px', 
+                                fontWeight: 600, 
+                                background: 'transparent', 
+                                color: 'white', 
+                                border: '1px solid white', 
+                                borderRadius: '4px', 
+                                cursor: 'pointer', 
+                                transition: 'all 0.3s ease', 
+                                fontFamily: '"Reckless Neue", serif' 
+                            }}>
+                                Contact us
+                            </button>
                         </motion.div>
                     </motion.div>
-                </section>
+                </HeroImageSection>
 
                 <AboutSection />
 
@@ -947,8 +661,8 @@ box-shadow: 0 8px 25px ${colors.turquoise}40;
                                 <motion.a href="#" whileHover={{ scale: 1.2 }} style={{ width: '40px', height: '40px', background: colors.brightBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textDecoration: 'none' }}>▶</motion.a>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-                                <motion.button whileHover={{ scale: 1.05 }} style={{ padding: '16px 32px', background: colors.brightBlue, color: 'white', border: 'none', borderRadius: '30px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,148,251,0.3)' }}>Apply Online</motion.button>
-                                <motion.button whileHover={{ scale: 1.05 }} style={{ padding: '16px 32px', background: 'transparent', color: colors.turquoise, border: `2px solid ${colors.turquoise}`, borderRadius: '30px', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>Request callback</motion.button>
+                                <motion.button whileHover={{ scale: 1.05 }} style={{ padding: '16px 32px', background: colors.brightBlue, color: 'white', border: 'none', borderRadius: '30px', fontSize: '16px', fontWeight: 400, cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,148,251,0.3)' }}>Apply Online</motion.button>
+                                <motion.button whileHover={{ scale: 1.05 }} style={{ padding: '16px 32px', background: 'transparent', color: colors.turquoise, border: `2px solid ${colors.turquoise}`, borderRadius: '30px', fontSize: '16px', fontWeight: 400, cursor: 'pointer' }}>Request callback</motion.button>
                             </div>
                         </div>
                     </div>
